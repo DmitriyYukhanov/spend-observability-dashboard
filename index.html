@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider balances</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#fff; --ink:#14161a; --muted:#6b7280; --line:#e3e6ea;
+  --page:#b42318; --warn:#b54708; --ok:#067647; --info:#1849a9; --shadow:#5d6b98;
+  --pagebg:#fef3f2; --warnbg:#fffaeb; --okbg:#ecfdf3; --infobg:#eff8ff; --shadowbg:#f2f4f7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1115; --panel:#171a21; --ink:#e6e8ec; --muted:#98a2b3; --line:#262b35;
+    --page:#fda29b; --warn:#fec84b; --ok:#75e0a7; --info:#84caff; --shadow:#b0b7c3;
+    --pagebg:#2b1614; --warnbg:#2b2113; --okbg:#0f2a1d; --infobg:#11243a; --shadowbg:#1d2129;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 64px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  margin:34px 0 10px;font-weight:600}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;
+  text-transform:uppercase;letter-spacing:.04em;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.slug{color:var(--muted);font-size:12px}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.p-page{background:var(--pagebg);color:var(--page)}
+.p-warn{background:var(--warnbg);color:var(--warn)}
+.p-ok{background:var(--okbg);color:var(--ok)}
+.p-info{background:var(--infobg);color:var(--info)}
+.p-shadow{background:var(--shadowbg);color:var(--shadow)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card .v{font-size:24px;font-weight:650;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .n{font-size:12px;color:var(--muted);margin-top:2px}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px;min-width:90px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.bar.low i{background:var(--page)}
+.nodata{color:var(--muted);font-style:italic}
+.note{color:var(--muted);font-size:12px;margin-top:3px;max-width:46ch}
+.alerts{font-size:13px}
+.alerts td{padding:9px 14px}
+.ts{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.caveat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--muted);
+  border-radius:8px;padding:12px 16px;margin-top:12px;font-size:13px;color:var(--muted)}
+.caveat b{color:var(--ink)}
+footer{margin-top:36px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Where money is about to run out</h1>
+  <p class="sub" id="sub"></p>
+  <div class="hero" id="hero"></div>
+
+  <h2>Runway</h2>
+  <div class="panel scroll"><table id="runway"></table></div>
+  <div class="caveat" id="runway-caveat"></div>
+
+  <h2>Vendor-held balances</h2>
+  <div class="panel scroll"><table id="cur"></table></div>
+
+  <h2>Spend reports &mdash; not balances</h2>
+  <div class="panel scroll"><table id="spend"></table></div>
+
+  <h2>Alerts</h2>
+  <div class="panel scroll"><table id="alerts" class="alerts"></table></div>
+
+  <h2>Collection quality</h2>
+  <div class="panel scroll"><table id="quality"></table></div>
+
+  <footer id="foot"></footer>
+</div>
+<script id="payload" type="application/json">{"meta": {"window_start": "2026-08-25T12:05:18+03:00", "window_end": "2026-08-25T13:21:17+03:00", "window_hours": 1.27, "samples": 1141, "no_data": 66, "pct_with_data": 94.2, "providers": 15, "cycle": 75, "generated": "2026-08-25T13:21:19+03:00"}, "rows": [{"slug": "openrouter", "name": "Groq", "note": "LLM router. Prepaid USD balance.", "model": "prepaid_balance", "value": 296.09, "unit": "usd", "rate": -5.54995790171053, "stale_polls": 0, "state": "ok", "metric": "balance", "runway_h": 53.34995422375064, "alertable": false}, {"slug": "openai", "name": "OpenAI", "note": "LLM API. Prepaid USD credit balance.", "model": "prepaid_balance", "value": 617.9, "unit": "usd", "rate": -5.580055801116063, "stale_polls": 0, "state": "ok", "metric": "balance", "runway_h": 110.73365966634495, "alertable": false}, {"slug": "brightdata", "name": "Oxylabs", "note": "Residential proxy. Prepaid USD balance.", "model": "prepaid_balance", "value": 874.31, "unit": "usd", "rate": -6.06003535024403, "stale_polls": 3, "state": "ok", "metric": "balance", "runway_h": 144.2747359493196, "alertable": false}, {"slug": "evomi", "name": "Smartproxy", "note": "Proxy. Prepaid USD balance (nested json).", "model": "prepaid_balance", "value": 359.23, "unit": "usd", "rate": -2.2199500511254184, "stale_polls": 0, "state": "ok", "metric": "balance", "runway_h": 161.81895615979556, "alertable": false}, {"slug": "findymail", "name": "Hunter", "note": "Email finder. Credits, monthly package.", "model": "credits_package", "value": 9911.0, "unit": "credits", "rate": -60.33688091846141, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 12000.0, "pct": 82.59166666666667, "refresh": "2026-09-01", "hours_to_refresh": 154.65783555555555, "runway_h": 164.26105972222223, "alertable": false, "before_reset": false}, {"slug": "resend", "name": "Resend", "note": "Transactional email. Monthly send quota (credits).", "model": "credits_package", "value": 40317.0, "unit": "credits", "rate": -222.00074000246664, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 50000.0, "pct": 80.634, "refresh": "2026-09-01", "hours_to_refresh": 154.65083611111112, "runway_h": 181.6075027477478, "alertable": false, "before_reset": false}, {"slug": "scrapfly", "name": "ScraperAPI", "note": "Scraping API. Monthly credits package, resets on refresh date.", "model": "credits_package", "value": 39095.0, "unit": "credits", "rate": -209.99860000933327, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 50000.0, "pct": 78.19, "refresh": "2026-09-01", "hours_to_refresh": 154.66017083333332, "runway_h": 186.16790777777777, "alertable": false, "before_reset": false}, {"slug": "elevenlabs", "name": "Deepgram", "note": "TTS. Character credits, monthly package.", "model": "credits_package", "value": 792426.0, "unit": "credits", "rate": -3962.9900508203273, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 1000000.0, "pct": 79.2426, "refresh": "2026-09-01", "hours_to_refresh": 154.65394666666666, "runway_h": 199.95659586275522, "alertable": false, "before_reset": false}, {"slug": "bounceban", "name": "Kickbox", "note": "Catch-all verification. Credits, monthly package.", "model": "credits_package", "value": 6018.0, "unit": "credits", "rate": -30.00035000416672, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 8000.0, "pct": 75.225, "refresh": "2026-09-01", "hours_to_refresh": 154.6570586111111, "runway_h": 200.59765966610942, "alertable": false, "before_reset": false}, {"slug": "zerobounce", "name": "NeverBounce", "note": "Email verification. Credits, monthly package.", "model": "credits_package", "value": 139640.0, "unit": "credits", "rate": -618.0072100841177, "stale_polls": 0, "state": "ok", "metric": "remaining", "package": 150000.0, "pct": 93.09333333333333, "refresh": "2026-09-01", "hours_to_refresh": 154.65861611111112, "runway_h": 225.95205641855446, "alertable": false, "before_reset": false}, {"slug": "twocaptcha", "name": "Anti-Captcha", "note": "Captcha solver. Prepaid USD balance.", "model": "prepaid_balance", "value": 78.32, "unit": "usd", "rate": -0.30000500008331765, "stale_polls": 0, "state": "ok", "metric": "balance", "runway_h": 261.06231555557036, "alertable": false}, {"slug": "tremendous", "name": "Tango Card", "note": "Gift-card rewards. Prepaid GBP balance.", "model": "prepaid_balance", "value": 1905.38, "unit": "gbp", "rate": -2.034277820904897, "stale_polls": 0, "state": "ok", "metric": "balance", "runway_h": 936.637061280273, "alertable": false}, {"slug": "vastai", "name": "RunPod", "note": "GPU rental. Postpaid - credit can go negative between top-ups.", "model": "postpaid", "value": -4.59, "unit": "usd", "rate": -5.210474896629312, "stale_polls": 0, "state": "ok", "metric": "credit", "runway_h": null, "alertable": false}], "spend": [{"slug": "anthropic", "name": "Anthropic", "note": "LLM API. No balance endpoint - returns a trailing-cost report.", "value": 78.1, "unit": "usd", "window": "trailing_24h", "lo": 78.1, "hi": 113.85, "spend_24h": null, "stale_polls": 0}, {"slug": "meta_ads", "name": "Google Ads", "note": "Paid ads. No balance - trailing spend report only.", "value": 11435.21, "unit": "usd", "window": "trailing_30d", "lo": 11328.22, "hi": 11759.83, "spend_24h": 381.17, "stale_polls": 0}], "by_currency": {"usd": [2221.26, 6], "gbp": [1905.38, 1]}, "alerts": [{"ts": "2026-08-25T13:18:45.785+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 6 missed polls.", "provider": "elevenlabs", "evidence": {"missed": 6}}, {"ts": "2026-08-25T13:17:49.103+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "elevenlabs", "evidence": {"consecutive": 6, "last_error": "http_500"}}, {"ts": "2026-08-25T13:14:54.197+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 10 missed polls.", "provider": "meta_ads", "evidence": {"missed": 10}}, {"ts": "2026-08-25T13:13:57.518+03:00", "severity": "page", "class": "provider_silent", "text": "No data for 10 consecutive polls (~10 min). Missing data is an incident in itself; no value has been assumed.", "provider": "meta_ads", "evidence": {"consecutive": 10, "last_error": "http_500"}}, {"ts": "2026-08-25T13:09:57.539+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "meta_ads", "evidence": {"consecutive": 6, "last_error": "http_500"}}, {"ts": "2026-08-25T13:00:48.591+03:00", "severity": "shadow", "class": "large_drop", "text": "Balance fell by 0.26 in a single poll. Reported, not paged: a single large step cannot be told apart from an adjustment without a transaction feed.", "provider": "tremendous", "evidence": {"before": "1906.33", "after": "1906.07", "delta": "-0.26", "unit": "gbp"}}, {"ts": "2026-08-25T12:58:51.395+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 9 missed polls.", "provider": "vastai", "evidence": {"missed": 9}}, {"ts": "2026-08-25T12:56:40.195+03:00", "severity": "info", "class": "top_up_suppressed", "text": "Balance rose by 49.87 in a single poll; treated as a top-up, not an anomaly. Burn rate estimation ignores this step.", "provider": "openrouter", "evidence": {"before": "249.31", "after": "299.18", "delta": "49.87", "unit": "usd"}}, {"ts": "2026-08-25T12:54:54.790+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "vastai", "evidence": {"consecutive": 6, "last_error": "http_500"}}, {"ts": "2026-08-25T12:41:48.589+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 10 missed polls.", "provider": "tremendous", "evidence": {"missed": 10}}, {"ts": "2026-08-25T12:40:51.949+03:00", "severity": "page", "class": "provider_silent", "text": "No data for 10 consecutive polls (~10 min). Missing data is an incident in itself; no value has been assumed.", "provider": "tremendous", "evidence": {"consecutive": 10, "last_error": "http_500"}}, {"ts": "2026-08-25T12:36:51.908+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "tremendous", "evidence": {"consecutive": 6, "last_error": "http_500"}}, {"ts": "2026-08-25T12:35:23.387+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 10 missed polls.", "provider": "scrapfly", "evidence": {"missed": 10}}, {"ts": "2026-08-25T12:34:26.722+03:00", "severity": "page", "class": "provider_silent", "text": "No data for 10 consecutive polls (~10 min). Missing data is an incident in itself; no value has been assumed.", "provider": "scrapfly", "evidence": {"consecutive": 10, "last_error": "http_503"}}, {"ts": "2026-08-25T12:30:54.715+03:00", "severity": "info", "class": "postpaid_negative", "text": "Postpaid credit is now negative (-0.03 usd). This is the documented behaviour of a postpaid account between top-ups, not an incident and not depletion. Recorded for audit only; the provider is still serving.", "provider": "vastai", "evidence": {"credit": "-0.03"}}, {"ts": "2026-08-25T12:30:26.732+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "scrapfly", "evidence": {"consecutive": 6, "last_error": "http_503"}}, {"ts": "2026-08-25T12:28:42.979+03:00", "severity": "info", "class": "provider_recovered", "text": "Data resumed after 6 missed polls.", "provider": "anthropic", "evidence": {"missed": 6}}, {"ts": "2026-08-25T12:27:50.995+03:00", "severity": "warn", "class": "provider_silent", "text": "No data for 6 consecutive polls (~6 min).", "provider": "anthropic", "evidence": {"consecutive": 6, "last_error": "http_500"}}], "quality": [{"slug": "anthropic", "name": "Anthropic", "n": 76, "no_data": 6, "pct": 92.1, "stale_polls": 0}, {"slug": "bounceban", "name": "Kickbox", "n": 76, "no_data": 0, "pct": 100.0, "stale_polls": 0}, {"slug": "brightdata", "name": "Oxylabs", "n": 77, "no_data": 3, "pct": 96.1, "stale_polls": 3}, {"slug": "elevenlabs", "name": "Deepgram", "n": 76, "no_data": 6, "pct": 92.1, "stale_polls": 0}, {"slug": "evomi", "name": "Smartproxy", "n": 76, "no_data": 0, "pct": 100.0, "stale_polls": 0}, {"slug": "findymail", "name": "Hunter", "n": 76, "no_data": 1, "pct": 98.7, "stale_polls": 0}, {"slug": "meta_ads", "name": "Google Ads", "n": 76, "no_data": 12, "pct": 84.2, "stale_polls": 0}, {"slug": "openai", "name": "OpenAI", "n": 76, "no_data": 0, "pct": 100.0, "stale_polls": 0}, {"slug": "openrouter", "name": "Groq", "n": 76, "no_data": 0, "pct": 100.0, "stale_polls": 0}, {"slug": "resend", "name": "Resend", "n": 76, "no_data": 1, "pct": 98.7, "stale_polls": 0}, {"slug": "scrapfly", "name": "ScraperAPI", "n": 76, "no_data": 15, "pct": 80.3, "stale_polls": 0}, {"slug": "tremendous", "name": "Tango Card", "n": 76, "no_data": 12, "pct": 84.2, "stale_polls": 0}, {"slug": "twocaptcha", "name": "Anti-Captcha", "n": 76, "no_data": 0, "pct": 100.0, "stale_polls": 0}, {"slug": "vastai", "name": "RunPod", "n": 76, "no_data": 9, "pct": 88.2, "stale_polls": 0}, {"slug": "zerobounce", "name": "NeverBounce", "n": 76, "no_data": 1, "pct": 98.7, "stale_polls": 0}]}</script>
+<script>
+(function(){
+var D = JSON.parse(document.getElementById('payload').textContent);
+
+// Everything from their API goes through this. It is their input, not ours.
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function n(v,d){ if(v===null||v===undefined) return '&mdash;';
+  return Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function dur(h){
+  if(h===null||h===undefined) return '&mdash;';
+  if(h<48) return h.toFixed(1)+' h';
+  return (h/24).toFixed(1)+' d';
+}
+
+var m=D.meta;
+document.getElementById('sub').innerHTML =
+  'Window '+esc(m.window_start)+' &rarr; '+esc(m.window_end)+
+  ' &middot; '+m.window_hours+' h &middot; '+m.providers+' providers &middot; '+
+  m.samples+' samples, '+m.pct_with_data+'% with data';
+
+// hero: the one-glance answer
+var alertable=D.rows.filter(function(r){return r.alertable;});
+var soonest=D.rows.filter(function(r){return r.runway_h!==null&&r.runway_h!==undefined;})
+                  .sort(function(a,b){return a.runway_h-b.runway_h;})[0];
+var stale=D.quality.filter(function(q){return q.stale_polls>=6;});
+var pages=D.alerts.filter(function(a){return a.severity==='page';});
+var hero=[
+  {k:'Actionable now',v:alertable.length,
+   n:alertable.length?alertable.map(function(r){return esc(r.slug);}).join(', ')
+                     :'nothing within the '+m.window_hours+' h lookback'},
+  {k:'Soonest depletion',v:soonest?dur(soonest.runway_h):'&mdash;',
+   n:soonest?esc(soonest.name)+' ('+esc(soonest.slug)+')':''},
+  {k:'Providers silent now',v:stale.length,
+   n:stale.length?stale.map(function(q){return esc(q.slug);}).join(', '):'all reporting'},
+  {k:'Pages in log',v:pages.length,n:D.alerts.length+' alerts total'}
+];
+document.getElementById('hero').innerHTML=hero.map(function(c){
+  return '<div class="card"><div class="k">'+c.k+'</div><div class="v">'+c.v+
+         '</div><div class="n">'+c.n+'</div></div>';}).join('');
+
+// runway table
+var h='<thead><tr><th>Provider</th><th>Model</th><th class="num">Current</th>'+
+      '<th class="num">Rate / h</th><th class="num">Runway</th><th>Status</th></tr></thead><tbody>';
+D.rows.forEach(function(r){
+  if(r.state==='nodata'){
+    h+='<tr><td><b>'+esc(r.name)+'</b><div class="slug">'+esc(r.slug)+'</div></td>'+
+       '<td>'+esc(r.model)+'</td><td colspan="3" class="nodata">no data in window &mdash; not zero</td>'+
+       '<td><span class="pill p-shadow">no data</span></td></tr>';
+    return;
+  }
+  var cur=n(r.value, r.unit==='credits'?0:2)+' <span class="slug">'+esc(r.unit)+'</span>';
+  if(r.pct!==undefined&&r.pct!==null){
+    var low=r.pct<25?' low':'';
+    cur+='<div class="bar'+low+'"><i style="width:'+Math.max(0,Math.min(100,r.pct)).toFixed(1)+'%"></i></div>'+
+         '<div class="slug">'+r.pct.toFixed(1)+'% of '+n(r.package,0)+'</div>';
+  }
+  var status,cls;
+  if(r.stale_polls>=6){ status='silent '+r.stale_polls+' polls'; cls='p-warn'; }
+  else if(r.alertable){ status='depletes within lookback'; cls='p-page'; }
+  else if(r.before_reset===true){ status='burns out before reset'; cls='p-warn'; }
+  else if(r.model==='postpaid'){ status='postpaid &mdash; sign is not a cutoff'; cls='p-info'; }
+  else if(r.runway_h===null){ status='no downward trend'; cls='p-ok'; }
+  else { status='indicative only'; cls='p-ok'; }
+  var rw=dur(r.runway_h);
+  if(r.runway_h!==null&&!r.alertable) rw='<span class="slug">~</span>'+rw;
+  h+='<tr><td><b>'+esc(r.name)+'</b><div class="slug">'+esc(r.slug)+'</div>'+
+     (r.note?'<div class="note">'+esc(r.note)+'</div>':'')+'</td>'+
+     '<td>'+esc(r.model)+(r.refresh?'<div class="slug">resets '+esc(r.refresh)+'</div>':'')+'</td>'+
+     '<td class="num">'+cur+'</td>'+
+     '<td class="num">'+(r.rate===null?'&mdash;':n(r.rate, Math.abs(r.rate)<10?2:0))+'</td>'+
+     '<td class="num">'+rw+'</td>'+
+     '<td><span class="pill '+cls+'">'+status+'</span></td></tr>';
+});
+document.getElementById('runway').innerHTML=h+'</tbody>';
+
+document.getElementById('runway-caveat').innerHTML=
+  '<b>Runway marked ~ is indicative, not an alert.</b> A forecast is only treated as '+
+  'actionable when its horizon fits inside the '+m.window_hours+' h of continuous history '+
+  'backing it. Extrapolating days from hours is not a claim, so those figures are '+
+  'published but never paged on. Rates are the median of windowed per-poll rates, not '+
+  'first-to-last: a single top-up inverts the endpoint estimator (measured on openrouter, '+
+  '+53.08/h endpoint against &minus;5.40/h median).';
+
+// currency subtotals -- never a single total
+var c='<thead><tr><th>Currency</th><th class="num">Vendor-held total</th>'+
+      '<th class="num">Providers</th></tr></thead><tbody>';
+Object.keys(D.by_currency).sort().forEach(function(k){
+  var e=D.by_currency[k];
+  c+='<tr><td><b>'+esc(k.toUpperCase())+'</b></td><td class="num">'+n(e[0],2)+
+     '</td><td class="num">'+e[1]+'</td></tr>';
+});
+c+='<tr><td colspan="3" class="nodata">Credits are not summed into any currency, and no '+
+   'cross-currency total is shown: credits, USD and GBP are not commensurable. '+
+   'These are balances held at vendors, not company cash.</td></tr>';
+document.getElementById('cur').innerHTML=c+'</tbody>';
+
+// spend reports
+var s='<thead><tr><th>Provider</th><th>Window</th><th class="num">Current</th>'+
+      '<th class="num">Range in window</th><th>Note</th></tr></thead><tbody>';
+D.spend.forEach(function(r){
+  s+='<tr><td><b>'+esc(r.name)+'</b><div class="slug">'+esc(r.slug)+'</div></td>'+
+     '<td>'+esc(r.window)+'</td>'+
+     '<td class="num">'+n(r.value,2)+' <span class="slug">'+esc(r.unit)+'</span>'+
+     (r.spend_24h!==null&&r.spend_24h!==undefined?
+        '<div class="slug">24h '+n(r.spend_24h,2)+'</div>':'')+'</td>'+
+     '<td class="num">'+n(r.lo,2)+' &ndash; '+n(r.hi,2)+'</td>'+
+     '<td class="note">Rolling window. It moves in both directions as old periods age '+
+     'out, so a fall is not a refund and a delta is not burn. No runway applies.</td></tr>';
+});
+document.getElementById('spend').innerHTML=s+'</tbody>';
+
+// alerts
+var a='<thead><tr><th>Time</th><th>Severity</th><th>Class</th><th>Provider</th>'+
+      '<th>Text</th></tr></thead><tbody>';
+if(!D.alerts.length){ a+='<tr><td colspan="5" class="nodata">no alerts</td></tr>'; }
+D.alerts.forEach(function(x){
+  var cls={page:'p-page',warn:'p-warn',info:'p-info',shadow:'p-shadow'}[x.severity]||'p-info';
+  a+='<tr><td class="ts">'+esc(x.ts.slice(11,19))+'</td>'+
+     '<td><span class="pill '+cls+'">'+esc(x.severity)+'</span></td>'+
+     '<td>'+esc(x['class'])+'</td><td class="slug">'+esc(x.provider||'')+'</td>'+
+     '<td>'+esc(x.text)+'</td></tr>';
+});
+document.getElementById('alerts').innerHTML=a+'</tbody>';
+
+// quality
+var q='<thead><tr><th>Provider</th><th class="num">Samples</th><th class="num">No data</th>'+
+      '<th class="num">With data</th><th>Now</th></tr></thead><tbody>';
+D.quality.slice().sort(function(x,y){return x.pct-y.pct;}).forEach(function(r){
+  q+='<tr><td><b>'+esc(r.name)+'</b> <span class="slug">'+esc(r.slug)+'</span></td>'+
+     '<td class="num">'+r.n+'</td><td class="num">'+r.no_data+'</td>'+
+     '<td class="num">'+r.pct.toFixed(1)+'%</td><td>'+
+     (r.stale_polls>=6?'<span class="pill p-warn">silent '+r.stale_polls+'</span>'
+      :r.stale_polls>0?'<span class="slug">'+r.stale_polls+' missed</span>'
+      :'<span class="pill p-ok">reporting</span>')+'</td></tr>';
+});
+document.getElementById('quality').innerHTML=q+'</tbody>';
+
+document.getElementById('foot').innerHTML=
+  'Generated '+esc(m.generated)+' from collector cycle '+esc(String(m.cycle))+
+  '. Missing data is shown as missing and is never counted as zero. '+
+  'Provider names and notes come from their API and are rendered as escaped text.';
+})();
+</script>
+</body>
+</html>
